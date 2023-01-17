@@ -70,6 +70,7 @@ module.exports = {
     ],
     "import/prefer-default-export": "off",
 
+    "max-len": [2, 80],
     // we use @typescript/no-shadow
     "no-shadow": "off",
 
@@ -85,6 +86,11 @@ module.exports = {
     "no-use-before-define": "off",
 
     quotes: ["error", "double"],
+
+    "react/function-component-definition": [2, {
+      namedComponents: "arrow-function",
+      unnamedComponents: "arrow-function",
+    }],
 
     "react/jsx-curly-newline": [0],
 
