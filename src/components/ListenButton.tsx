@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
 type SR = InstanceType<typeof window.SpeechRecognition>;
 type SpeechRecognitionEvent = InstanceType<typeof window.SpeechRecognitionEvent>
@@ -31,11 +31,20 @@ const ListenButton: FC<{ speech: SR }> = ({ speech }) => {
     SpeechRecognitionEvent | null
   >(null);
 
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    if (isSpeaking) setResults(null);
+  }, [isSpeaking]);
+
   speech.addEventListener("result", (r) => setResults(r));
+  speech.addEventListener("start", () => setIsSpeaking(true));
+  speech.addEventListener("end", () => setIsSpeaking(false));
 
   if (speech === null) return null;
   return (
     <div>
+      {isSpeaking && <h3>I&apos;m Listening....</h3>}
       {results && <ShowResults results={results} />}
       <div>
         <button type="button" onClick={onClickButton(speech)}>
