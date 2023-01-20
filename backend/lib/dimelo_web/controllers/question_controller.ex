@@ -1,4 +1,4 @@
-defmodule DimeloWeb.PageController do
+defmodule DimeloWeb.QuestionController do
   use DimeloWeb, :controller
 
   def index(conn, _params) do

@@ -17,7 +17,7 @@ defmodule DimeloWeb.Router do
   scope "/api", DimeloWeb do
     pipe_through :api
 
-    get "/", PageController, :index
+    get "/question", QuestionController, :index
   end
 
   # Other scopes may use custom stacks.
