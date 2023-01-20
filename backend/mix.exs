@@ -10,7 +10,9 @@ defmodule Dimelo.MixProject do
       compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_paths: ["lib"],
+      test_pattern: "*.test.exs"
     ]
   end
 
@@ -25,7 +27,7 @@ defmodule Dimelo.MixProject do
   end
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
