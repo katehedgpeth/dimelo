@@ -1,6 +1,6 @@
 defmodule Dimelo.Language do
   use Ecto.Schema
-  import Ecto.{Changeset, Query}
+  import Ecto.Changeset
   alias Dimelo.{Repo, Sentence}
 
   @type t :: %__MODULE__{
