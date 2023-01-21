@@ -39,10 +39,10 @@ defmodule Dimelo.LanguageTest do
 
   describe "&sentences/1" do
     test "returns a list of sentences in that language" do
-      Language.new(@spanish)
+      assert {:ok, spanish} = Language.new(@spanish)
 
-      assert {:ok, %Language{} = spanish} = Language.get_by_code(@spanish.code)
-      assert {:ok, %Sentence{} = sentence} = Sentence.new(%{language: spanish, text: "This is a sentence"})
+      assert {:ok, %Sentence{} = sentence} =
+               Sentence.new(%{language: spanish, text: "This is a sentence"})
 
       assert Language.sentences(@spanish.code) == [sentence]
     end

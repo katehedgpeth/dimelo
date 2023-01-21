@@ -43,6 +43,12 @@ defmodule Dimelo.Sentence do
     |> Repo.insert()
   end
 
+  def all do
+    Repo.all(from(s in __MODULE__))
+  end
+
+  def serialize([]), do: []
+
   def serialize([%__MODULE__{} | _] = sentences) do
     sentences
     |> Repo.preload(
