@@ -10,7 +10,10 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-all_sentences = Dimelo.Sentence |> Dimelo.Repo.all()
+alias Dimelo.{Language, Sentence, Repo, Seeder}
+
+Seeder.seed_languages()
+[english_lang, spanish_lang] = Repo.all(Language)
 
 "../../dimelo_recorder/data/*.json"
 |> Path.absname()
@@ -18,16 +21,16 @@ all_sentences = Dimelo.Sentence |> Dimelo.Repo.all()
 |> Enum.each(fn path ->
   {:ok, str} = File.read(path)
   {:ok, sentences} = Jason.decode(str)
+
   Enum.each(sentences, fn %{"english" => [english], "spanish" => [spanish]} ->
-    unless Enum.any?(all_sentences, & &1.english === english) do
-      %Dimelo.Sentence{english: english, spanish: spanish}
-      |> IO.inspect()
-      |> Dimelo.Repo.insert!()
-    end
+    Seeder.seed_sentence(%{english: english, spanish: spanish},
+      english_lang: english_lang,
+      spanish_lang: spanish_lang
+    )
   end)
 end)
 
-Dimelo.Sentence
-|> Dimelo.Repo.all()
+Sentence
+|> Repo.all()
 |> length()
 |> IO.inspect(label: "TOTAL SENTENCE COUNT")
