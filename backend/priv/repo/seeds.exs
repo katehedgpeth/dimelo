@@ -15,7 +15,9 @@ alias Dimelo.{Language, Sentence, Repo, Seeder}
 Seeder.seed_languages()
 [english_lang, spanish_lang] = Repo.all(Language)
 
-"../../dimelo_recorder/data/*.json"
+"DATA_FOLDER"
+|> System.get_env()
+|> Path.join("*.json")
 |> Path.absname()
 |> Path.wildcard()
 |> Enum.each(fn path ->
