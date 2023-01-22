@@ -1,8 +1,9 @@
 import React, { FC } from "react";
-
-import ListenButton from "./components/ListenButton";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 import "./App.css";
+import Sentences from "./components/Sentences";
+import SentenceContextProvider from "./contexts/SentenceContext";
 
 const SpeechRecognition = window.SpeechRecognition
   ?? window.webkitSpeechRecognition;
@@ -22,17 +23,22 @@ const Supported: FC = () => {
   speech.continuous = false;
   return (
     <div className="App">
-      <h1>Say Something in Spanish!</h1>
-      <ListenButton speech={speech} />
+      <SentenceContextProvider>
+        <Sentences />
+      </SentenceContextProvider>
     </div>
   );
 };
 
+const queryClient = new QueryClient();
+
 const App = () => (
   <div className="App">
-    {SpeechRecognition
-      ? <Supported />
-      : <NotSupported />}
+    <QueryClientProvider client={queryClient}>
+      {SpeechRecognition
+        ? <Supported />
+        : <NotSupported />}
+    </QueryClientProvider>
   </div>
 );
 
