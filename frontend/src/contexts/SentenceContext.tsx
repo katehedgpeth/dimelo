@@ -4,10 +4,12 @@ import React, {
   FC,
   PropsWithChildren,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import { UseQueryResult } from "react-query";
 import useSentences, { Sentence } from "../services/sentences";
 import { SpeechRecognitionEvent } from "../services/speech_recognition";
 
@@ -23,67 +25,112 @@ export type SetHeard = Dispatch<
 >;
 export type SetWasCorrect = Dispatch<SetStateAction<boolean | undefined>>;
 export type SetIsSpeaking = Dispatch<SetStateAction<boolean>>;
+export type SetSubmitted = Dispatch<SetStateAction<string | undefined>>
 
-interface Context {
-  current?: Sentence;
+export interface State {
+  sentences: Sentences;
+  error?: unknown;
   heard?: SpeechRecognitionEvent;
   isLoading: boolean;
   isSpeaking: boolean;
-  error?: unknown;
+  submitted?: string;
   wasCorrect?: boolean;
-  setCurrent: SetCurrent
-  setHeard: SetHeard;
-  setIsSpeaking: SetIsSpeaking;
-  setWasCorrect: SetWasCorrect;
 }
 
-export const SentenceContext = createContext<Context>({
+interface Handlers {
+  onClickNext: () => void;
+  setState: Dispatch<SetStateAction<State>>
+}
+
+interface Context {
+  state: State,
+  handlers: Handlers
+}
+
+const defaultState: State = {
   isLoading: true,
   isSpeaking: false,
-  setCurrent: () => undefined,
-  setHeard: () => undefined,
-  setIsSpeaking: () => false,
-  setWasCorrect: () => undefined,
-});
-
-const SentenceContextProvider: FC<PropsWithChildren> = ({ children }) => {
-  const [wasCorrect, setWasCorrect] = useState<boolean>();
-  const [{ current }, setCurrent] = useState<Sentences>({
+  sentences: {
     next: [],
     previous: [],
-  });
-  const [heard, setHeard] = useState<SpeechRecognitionEvent>();
-  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  },
+};
 
-  const { isLoading, data, error } = useSentences();
+const defaultHandlers: Handlers = {
+  onClickNext: () => undefined,
+  setState: () => undefined,
+};
+
+export const SentenceContext = createContext<Context>({
+  handlers: defaultHandlers,
+  state: defaultState,
+});
+
+const moveToNextQuestion = (
+  refetchSentences: UseQueryResult["refetch"],
+): SetStateAction<State> => (
+  (state) => {
+    const { sentences: { current, next, previous } } = state;
+    if (!current) return state;
+    if (next.length === 0) {
+      refetchSentences();
+      return state;
+    }
+    const [newCurrent, ...newNext] = next;
+    return {
+      ...state,
+      heard: undefined,
+      sentences: {
+        current: newCurrent,
+        next: newNext,
+        previous: [current, ...previous],
+      },
+      submitted: undefined,
+      wasCorrect: undefined,
+    };
+  }
+);
+
+const SentenceContextProvider: FC<PropsWithChildren> = ({ children }) => {
+  const {
+    isLoading, data, error, refetch: refetchSentences,
+  } = useSentences();
+  const [state, setState] = useState<State>({
+    ...defaultState,
+    error,
+    isLoading,
+  });
 
   useEffect(() => {
-    if (isLoading) return;
-    if (data && !current) {
-      const [first, ...rest] = data;
-      setCurrent((state) => ({ ...state, current: first, next: rest }));
-    }
-  }, [isLoading, data]);
+    setState((oldState) => {
+      const sentences: Sentences = data
+        ? { ...oldState.sentences, current: data[0], next: data.slice(1) }
+        : oldState.sentences;
+
+      return {
+        ...oldState,
+        error,
+        isLoading,
+        sentences,
+      };
+    });
+  }, [isLoading, data, error]);
+
+  const onClickNext = useCallback(() => {
+    setState(moveToNextQuestion(refetchSentences));
+  }, []);
+
+  useEffect(() => {
+    setState({
+      ...state,
+      wasCorrect: undefined,
+    });
+  }, [state.submitted]);
 
   const context = useMemo<Context>(() => ({
-    current,
-    error,
-    heard,
-    isLoading,
-    isSpeaking,
-    setCurrent,
-    setHeard,
-    setIsSpeaking,
-    setWasCorrect,
-    wasCorrect,
-  }), [
-    current,
-    error,
-    heard,
-    isLoading,
-    isSpeaking,
-    wasCorrect,
-  ]);
+    handlers: { onClickNext, setState },
+    state,
+  }), [state]);
 
   return (
     <SentenceContext.Provider

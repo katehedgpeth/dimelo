@@ -1,10 +1,45 @@
-import React, { FC, useContext } from "react";
+import React, {
+  ChangeEvent, FC, KeyboardEvent, useCallback, useContext,
+} from "react";
 import { SentenceContext } from "../contexts/SentenceContext";
 
-const TextBox: FC = () => {
-  const { heard } = useContext(SentenceContext);
-  const content = heard ? Array.from(heard.results)[0][0].transcript : "";
-  return <textarea style={{ width: "100%" }} value={content} />;
+interface Props {
+  onSubmit(input: string): void
+}
+type OnChangeCB = (e: ChangeEvent<HTMLTextAreaElement>) => void
+
+const TextBox: FC<Props> = ({ onSubmit }) => {
+  const {
+    handlers: { setState },
+  } = useContext(SentenceContext);
+
+  const onChange = useCallback<OnChangeCB>((e) => {
+    const { target: { value } } = e;
+    setState((oldState) => ({ ...oldState, submitted: value }));
+  }, []);
+
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") e.preventDefault();
+  };
+
+  const onKeyUp = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    const { key, target } = e;
+    if (key === "Enter") {
+      e.preventDefault();
+      const { value } = target as HTMLTextAreaElement;
+      onSubmit(value);
+    }
+  };
+
+  return (
+    <textarea
+      style={{ width: "100%" }}
+      onChange={onChange}
+      onKeyUp={onKeyUp}
+      onKeyDown={onKeyDown}
+      name="userInput"
+    />
+  );
 };
 
 export default TextBox;
