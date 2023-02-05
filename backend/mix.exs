@@ -51,7 +51,13 @@ defmodule Dimelo.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:cors_plug, "~> 3.0"}
+      {:cors_plug, "~> 3.0"},
+      {:httpoison, "~> 2.0"},
+      {:mock_me,
+       git: "https://github.com/katehedgpeth/mock_me.git",
+       ref: "964d7c2b7d1054c6a258b227288b16a3a455ceae",
+       only: :test,
+       runtime: false}
     ]
   end
 

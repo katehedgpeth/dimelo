@@ -64,6 +64,14 @@ defmodule Dimelo.Sentence do
     |> Repo.insert()
   end
 
+  @spec get_or_create(%{text: String.t(), language: Language.t()}) :: {:ok, t()}
+  def get_or_create(%{text: text, language: %Language{}} = data) do
+    case Repo.get_by(__MODULE__, text_standardized: standardize_text(text)) do
+      %Sentence{} = new_sentence -> {:ok, new_sentence}
+      nil -> new(data)
+    end
+  end
+
   def all do
     Repo.all(from(s in __MODULE__))
   end

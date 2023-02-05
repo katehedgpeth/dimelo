@@ -35,6 +35,21 @@ defmodule Dimelo.Translation do
     end
   end
 
+  @spec get_or_create(%{original: Sentence.t(), translated: Sentence.t()}) :: {:ok, t()}
+  def get_or_create(
+        %{
+          original: %Sentence{id: original_id},
+          translated: %Sentence{id: translated_id}
+        } = data
+      ) do
+    __MODULE__
+    |> Repo.get_by(original_id: original_id, translated_id: translated_id)
+    |> case do
+      %__MODULE__{} = translation -> {:ok, translation}
+      nil -> new(data)
+    end
+  end
+
   @doc false
   def changeset(data) do
     %__MODULE__{}

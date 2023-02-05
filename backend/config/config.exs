@@ -26,6 +26,10 @@ config :dimelo, DimeloWeb.Endpoint,
 # at the `config/runtime.exs`.
 config :dimelo, Dimelo.Mailer, adapter: Swoosh.Adapters.Local
 
+config :dimelo, Dimelo.Services.OpenAI,
+  url: "https://api.openai.com",
+  token: System.get_env("OPEN_AI_TOKEN")
+
 # Swoosh API client is needed for adapters other than SMTP.
 config :swoosh, :api_client, false
 

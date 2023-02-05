@@ -7,6 +7,9 @@ defmodule Dimelo.Application do
 
   @impl true
   def start(_type, _args) do
+    # verify env vars are not missing
+    Dimelo.Services.OpenAI.token()
+
     children = [
       # Start the Ecto repository
       Dimelo.Repo,
