@@ -16,7 +16,7 @@ const Sentence: FC = () => {
   return (
     <>
       <h1>Dímelo en Español!</h1>
-      <h3>{current.text}</h3>
+      <h3>{current.text_punctuated}</h3>
       <WasICorrect />
       {wasCorrect ? <NextButton /> : <InputForm />}
     </>

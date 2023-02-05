@@ -4,17 +4,31 @@ defmodule Dimelo.Sentence do
   import Ecto.Query
   alias Dimelo.{Sentence, Translation, Language, Repo}
 
-  @derive {Jason.Encoder, only: [:id, :language, :text, :translations]}
+  @derive {
+    Jason.Encoder,
+    only: [
+      :id,
+      :language,
+      :text_punctuated,
+      :translations
+    ]
+  }
+
+  @punctuation "!@#$%^&*()_-+=\|}]{[<,>.?¿¡/"
+               |> String.split("")
+               |> Enum.reject(&(&1 == ""))
 
   @type t :: %__MODULE__{
           language_id: integer(),
-          text: String.t(),
+          text_punctuated: String.t(),
+          text_standardized: String.t(),
           translations: [Map.t()] | nil
         }
 
   schema "sentences" do
     belongs_to :language, Language
-    field :text, :string
+    field :text_punctuated, :string
+    field :text_standardized, :string
 
     many_to_many :translations, Sentence,
       join_through: Translation,
@@ -28,11 +42,18 @@ defmodule Dimelo.Sentence do
   end
 
   @doc false
-  def changeset(sentence \\ %__MODULE__{}, attrs) do
-    sentence
-    |> cast(attrs, [:text, :language_id])
-    |> validate_required([:text, :language_id])
-    |> unique_constraint(:text)
+  @spec changeset(%{text: String.t(), language_id: integer()}) :: Changeset.t()
+  def changeset(%{text: "" <> _, language_id: language_id} = attrs)
+      when is_integer(language_id) do
+    {text, attrs} = Map.pop!(attrs, :text)
+
+    %__MODULE__{}
+    |> cast(
+      Map.merge(attrs, %{text_punctuated: text, text_standardized: standardize_text(text)}),
+      [:text_punctuated, :text_standardized, :language_id]
+    )
+    |> validate_required([:text_punctuated, :text_standardized, :language_id])
+    |> unique_constraint(:text_standardized)
   end
 
   def new(%{text: "" <> _, language: %Language{id: lang_id}} = data) do
@@ -53,7 +74,19 @@ defmodule Dimelo.Sentence do
     sentences
     |> Repo.preload(
       language: from(l in Language, select: l.code),
-      translations: from(s in __MODULE__, select: s.text)
+      translations: from(s in __MODULE__, select: s.text_standardized)
     )
+  end
+
+  def standardize_text("" <> text) do
+    text
+    |> String.trim()
+    |> String.downcase()
+    |> String.replace(@punctuation, "")
+    |> String.replace("á", "a")
+    |> String.replace("é", "e")
+    |> String.replace("í", "i")
+    |> String.replace("ó", "o")
+    |> String.replace("ú", "u")
   end
 end

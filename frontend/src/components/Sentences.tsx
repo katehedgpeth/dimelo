@@ -4,9 +4,11 @@ import Sentence from "./Sentence";
 
 const Sentences: FC = () => {
   const {
-    current,
-    isLoading,
-    error,
+    state: {
+      sentences: { current },
+      isLoading,
+      error,
+    },
   } = useContext(SentenceContext);
 
   if (isLoading) {

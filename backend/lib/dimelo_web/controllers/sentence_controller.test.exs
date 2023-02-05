@@ -14,7 +14,7 @@ defmodule DimeloWeb.QuestionControllerTest do
       Enum.each(response, fn sentence ->
         assert %{
                  "id" => id,
-                 "text" => "" <> _,
+                 "text_punctuated" => "" <> _,
                  "language" => lang,
                  "translations" => translations
                } = sentence

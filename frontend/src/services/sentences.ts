@@ -1,8 +1,9 @@
 import { useQuery } from "react-query";
 
 export interface Sentence {
-  text: string;
-  translations: string[]
+  language: "en" | "sp"
+  text_punctuated: string;
+  translations: string[];
 }
 
 const API_URL = "http://localhost:4000/api/sentences/?lang=en";
